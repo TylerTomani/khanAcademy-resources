@@ -27,7 +27,6 @@ addEventListener('keydown', e => {
     let letter = e.key.toLowerCase()
     letterElsArr = []
     idEls.forEach(el =>{
-        console.log(el)
         if(letter == el.id[0].toLowerCase() && !el.classList.contains('hide')){
             letterElsArr.push(el)
         }
