@@ -1,7 +1,6 @@
 // keyboard-nav.js
-// keyboard-nav.js
-
 addEventListener('keydown', e => {
+    // const activeEl = document.activeElement
     const key = e.key.toLowerCase();
 
     // Only single alphanumeric characters (letters + numbers)
@@ -15,14 +14,10 @@ addEventListener('keydown', e => {
 
     if (!focusableEls.length) return;
 
-
     // Filter by first number OR first letter in the element text
     const matchingEls = focusableEls.filter(el => {
         const text = el.innerText.trim().toLowerCase();
-
-        // Find first digit
         const numMatch = text.match(/[0-9]/);
-        // Find first letter
         const letterMatch = text.match(/[a-z]/);
 
         return (numMatch && numMatch[0] === key) ||
@@ -31,10 +26,8 @@ addEventListener('keydown', e => {
 
     if (matchingEls.length === 0) return;
 
-    console.log("Matched elements:", matchingEls);
-
-    // Placeholder: determine which element to focus based on the pressed key
-    // const nextElement = getElementToFocus(focusableElements, key);
+    const activeEl = document.activeElement;
+    let target;
 
     if (window.lastLetterPressed === key) {
         // Cycle within the same letter group
@@ -48,24 +41,22 @@ addEventListener('keydown', e => {
             target = matchingEls[(iMatchingEls + 1) % matchingEls.length];
         }
     } else {
-        // Fresh letter press → start from beginning (or end if Shift)
-        target = e.shiftKey ? matchingEls[matchingEls.length - 1] : matchingEls[0];
+        // Fresh letter press → pick closest match (prefer below if equal)
+        const currentIndex = focusableEls.indexOf(activeEl);
+
+        const nextBelow = matchingEls.find(el => focusableEls.indexOf(el) > currentIndex);
+        const candidatesAbove = matchingEls.filter(el => focusableEls.indexOf(el) < currentIndex);
+        const nextAbove = candidatesAbove.length ? candidatesAbove[candidatesAbove.length - 1] : null;
+
+        if (nextBelow && nextAbove) {
+            const distBelow = focusableEls.indexOf(nextBelow) - currentIndex;
+            const distAbove = currentIndex - focusableEls.indexOf(nextAbove);
+            target = (distBelow <= distAbove) ? nextBelow : nextAbove;
+        } else {
+            target = nextBelow || nextAbove;
+        }
     }
 
     target?.focus();
     window.lastLetterPressed = key;
-
 });
-
-/**
- * Decide which element should receive focus based on the pressed key.
- * Right now, this is a stub returning the first match.
- * Later we can enhance it with spatial logic or key-specific shortcuts.
- */
-// Example placeholder: first element whose id or text starts with the key
-// function getElementToFocus(elements, key) {
-//     return elements.find(el => {
-//         const text = el.innerText || el.id || '';
-//         return text.trim().toLowerCase().startsWith(key);
-//     }) || null;
-// }
